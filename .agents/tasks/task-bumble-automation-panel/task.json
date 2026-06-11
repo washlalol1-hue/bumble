@@ -1,0 +1,7 @@
+{
+  "task_id": "task-bumble-automation-panel",
+  "task_description": "Build a full-featured Bumble account maker automation panel - a React SPA with dark theme (purple/pink), featuring proxy input, Facebook/Gmail login credentials, SMS API integration, image upload, name generator, bio writer with AI rewrite, token output display, and start/stop automation with mock simulation logic.",
+  "status": "in_progress",
+  "feature_order": ["FEAT-001"],
+  "blocked_reason": null
+}
