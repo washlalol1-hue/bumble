@@ -1,6 +1,6 @@
 import { 
   Globe, Users, MessageSquare, Image, Type, FileText, 
-  Trophy, Play 
+  Trophy, Play, Shield, Wrench, Heart, Bot, ArrowRightLeft
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -15,6 +15,11 @@ const navItems = [
   { id: 'images', label: 'Images', icon: Image },
   { id: 'names', label: 'Names', icon: Type },
   { id: 'bios', label: 'Bios', icon: FileText },
+  { id: 'shadowban-checker', label: 'Ban Check', icon: Shield },
+  { id: 'shadowban-fixer', label: 'Ban Fix', icon: Wrench },
+  { id: 'auto-swiper', label: 'Auto Swipe', icon: Heart },
+  { id: 'auto-messager', label: 'AI Message', icon: Bot },
+  { id: 'funnel-selector', label: 'Funnel', icon: ArrowRightLeft },
   { id: 'results', label: 'Results', icon: Trophy },
   { id: 'automation', label: 'Run', icon: Play },
 ];

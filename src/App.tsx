@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { Header } from './components/Header';
+import { Header, Platform } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { ProxyInput } from './components/ProxyInput';
 import { AccountCredentials } from './components/AccountCredentials';
@@ -10,11 +10,17 @@ import { NameSelector } from './components/NameSelector';
 import { BioSection } from './components/BioSection';
 import { TokenOutput } from './components/TokenOutput';
 import { AutomationControl } from './components/AutomationControl';
+import { ShadowbanChecker } from './components/ShadowbanChecker';
+import { ShadowbanFixer } from './components/ShadowbanFixer';
+import { AutoSwiper } from './components/AutoSwiper';
+import { AutoMessager } from './components/AutoMessager';
+import { FunnelSelector } from './components/FunnelSelector';
 import { useAutomation } from './hooks/useAutomation';
 import { Account, Bio, ProfileImage, SmsProvider } from './types';
 
 function App() {
   const [activeSection, setActiveSection] = useState('proxies');
+  const [activePlatform, setActivePlatform] = useState<Platform>('bumble');
   const [proxies, setProxies] = useState('');
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [smsProvider, setSmsProvider] = useState<SmsProvider>('smspool');
@@ -55,7 +61,11 @@ function App() {
         }}
       />
       
-      <Header isRunning={automation.isRunning} />
+      <Header
+        isRunning={automation.isRunning}
+        activePlatform={activePlatform}
+        onPlatformChange={setActivePlatform}
+      />
       <Sidebar activeSection={activeSection} onNavigate={handleNavigate} />
       
       <main className="ml-16 lg:ml-56 pt-[57px] min-h-screen">
@@ -85,6 +95,16 @@ function App() {
           />
           
           <BioSection bios={bios} onBiosChange={setBios} />
+
+          <ShadowbanChecker platform={activePlatform} />
+
+          <ShadowbanFixer platform={activePlatform} />
+
+          <AutoSwiper platform={activePlatform} />
+
+          <AutoMessager platform={activePlatform} />
+
+          <FunnelSelector />
           
           <TokenOutput results={automation.results} />
           
