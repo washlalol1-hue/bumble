@@ -11,7 +11,7 @@ interface NameSelectorProps {
 }
 
 export function NameSelector({ mode, manualNames, onModeChange, onManualNamesChange }: NameSelectorProps) {
-  const [previewNames, setPreviewNames] = useState(() => generateMultipleNames(3));
+  const [previewNames, setPreviewNames] = useState<{ first: string }[]>(() => generateMultipleNames(3));
 
   const refreshNames = () => {
     setPreviewNames(generateMultipleNames(3));
@@ -75,12 +75,12 @@ export function NameSelector({ mode, manualNames, onModeChange, onManualNamesCha
             {previewNames.map((name, idx) => (
               <div key={idx} className="p-3 bg-dark-800 rounded-lg border border-dark-700 flex items-center gap-2">
                 <span className="text-xs text-dark-500 w-6">#{idx + 1}</span>
-                <span className="text-sm text-dark-100">{name.first} {name.last}</span>
+                <span className="text-sm text-dark-100">{name.first}</span>
               </div>
             ))}
           </div>
           <p className="text-xs text-dark-500 mt-3">
-            Names will be randomly generated for each account during automation.
+            Girl names will be randomly generated for each account during automation.
           </p>
         </div>
       ) : (
@@ -88,11 +88,11 @@ export function NameSelector({ mode, manualNames, onModeChange, onManualNamesCha
           <textarea
             value={manualNames}
             onChange={(e) => onManualNamesChange(e.target.value)}
-            placeholder={`Enter names, one per line:\nJane Smith\nEmily Johnson\nSarah Williams`}
+            placeholder={`Enter names, one per line:\nJane\nEmily\nSarah`}
             className="input-field h-32 resize-y font-mono text-sm"
           />
           <p className="text-xs text-dark-500 mt-2">
-            Format: First Last (one per line). Names will be assigned to accounts in order.
+            One first name per line. Names will be assigned to accounts in order.
           </p>
         </div>
       )}

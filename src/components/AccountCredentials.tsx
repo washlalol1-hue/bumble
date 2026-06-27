@@ -3,16 +3,44 @@ import { Users, Plus, Trash2, Upload } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { Account, AccountType } from '../types';
+import { Platform } from './Header';
 
 interface AccountCredentialsProps {
   accounts: Account[];
   onAccountsChange: (accounts: Account[]) => void;
+  platform: Platform;
 }
 
-export function AccountCredentials({ accounts, onAccountsChange }: AccountCredentialsProps) {
-  const [accountType, setAccountType] = useState<AccountType>('facebook');
+function getAccountTypes(platform: Platform): { id: AccountType; label: string; color: string }[] {
+  switch (platform) {
+    case 'bumble':
+      return [
+        { id: 'facebook', label: 'Facebook', color: 'bg-blue-600' },
+        { id: 'gmail', label: 'Gmail', color: 'bg-red-600' },
+      ];
+    case 'hinge':
+      return [
+        { id: 'gmail', label: 'Gmail', color: 'bg-red-600' },
+      ];
+    case 'tinder':
+      return [
+        { id: 'icloud', label: 'iCloud', color: 'bg-slate-600' },
+        { id: 'gmail', label: 'Gmail', color: 'bg-red-600' },
+      ];
+  }
+}
+
+export function AccountCredentials({ accounts, onAccountsChange, platform }: AccountCredentialsProps) {
+  const accountTypes = getAccountTypes(platform);
+  const [accountType, setAccountType] = useState<AccountType>(accountTypes[0].id);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // Reset account type when platform changes if current type is not available
+  const validTypes = accountTypes.map(t => t.id);
+  if (!validTypes.includes(accountType)) {
+    setAccountType(accountTypes[0].id);
+  }
 
   const handleAdd = () => {
     if (!email.trim() || !password.trim()) {
@@ -64,6 +92,22 @@ export function AccountCredentials({ accounts, onAccountsChange }: AccountCreden
     input.click();
   };
 
+  const getTypeBadge = (type: AccountType) => {
+    switch (type) {
+      case 'facebook': return { label: 'FB', class: 'bg-blue-500/20 text-blue-300' };
+      case 'gmail': return { label: 'GM', class: 'bg-red-500/20 text-red-300' };
+      case 'icloud': return { label: 'iC', class: 'bg-slate-500/20 text-slate-300' };
+    }
+  };
+
+  const getPlaceholder = () => {
+    switch (accountType) {
+      case 'facebook': return 'Facebook email/username';
+      case 'gmail': return 'Gmail address';
+      case 'icloud': return 'iCloud email';
+    }
+  };
+
   return (
     <motion.section
       id="accounts"
@@ -89,26 +133,19 @@ export function AccountCredentials({ accounts, onAccountsChange }: AccountCreden
 
       {/* Account type toggle */}
       <div className="flex bg-dark-800 rounded-lg p-1 mb-4">
-        <button
-          onClick={() => setAccountType('facebook')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-            accountType === 'facebook' 
-              ? 'bg-blue-600 text-white shadow-md' 
-              : 'text-dark-400 hover:text-dark-200'
-          }`}
-        >
-          Facebook
-        </button>
-        <button
-          onClick={() => setAccountType('gmail')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
-            accountType === 'gmail' 
-              ? 'bg-red-600 text-white shadow-md' 
-              : 'text-dark-400 hover:text-dark-200'
-          }`}
-        >
-          Gmail
-        </button>
+        {accountTypes.map((type) => (
+          <button
+            key={type.id}
+            onClick={() => setAccountType(type.id)}
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all ${
+              accountType === type.id
+                ? `${type.color} text-white shadow-md`
+                : 'text-dark-400 hover:text-dark-200'
+            }`}
+          >
+            {type.label}
+          </button>
+        ))}
       </div>
 
       {/* Add account form */}
@@ -117,7 +154,7 @@ export function AccountCredentials({ accounts, onAccountsChange }: AccountCreden
           type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder={accountType === 'facebook' ? 'Facebook email/username' : 'Gmail address'}
+          placeholder={getPlaceholder()}
           className="input-field"
         />
         <input
@@ -137,25 +174,28 @@ export function AccountCredentials({ accounts, onAccountsChange }: AccountCreden
       {accounts.length > 0 && (
         <div className="mt-4 space-y-2 max-h-60 overflow-y-auto">
           <AnimatePresence>
-            {accounts.map((account, idx) => (
-              <motion.div
-                key={account.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="flex items-center gap-3 p-3 bg-dark-800 rounded-lg border border-dark-700"
-              >
-                <span className="text-xs text-dark-500 w-6">#{idx + 1}</span>
-                <span className={`badge ${account.type === 'facebook' ? 'bg-blue-500/20 text-blue-300' : 'bg-red-500/20 text-red-300'}`}>
-                  {account.type === 'facebook' ? 'FB' : 'GM'}
-                </span>
-                <span className="text-sm text-dark-200 flex-1 truncate">{account.email}</span>
-                <span className="text-sm text-dark-500 font-mono">{'*'.repeat(8)}</span>
-                <button onClick={() => handleDelete(account.id)} className="p-1 text-dark-500 hover:text-red-400 transition-colors">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </motion.div>
-            ))}
+            {accounts.map((account, idx) => {
+              const badge = getTypeBadge(account.type);
+              return (
+                <motion.div
+                  key={account.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="flex items-center gap-3 p-3 bg-dark-800 rounded-lg border border-dark-700"
+                >
+                  <span className="text-xs text-dark-500 w-6">#{idx + 1}</span>
+                  <span className={`badge ${badge.class}`}>
+                    {badge.label}
+                  </span>
+                  <span className="text-sm text-dark-200 flex-1 truncate">{account.email}</span>
+                  <span className="text-sm text-dark-500 font-mono">{'*'.repeat(8)}</span>
+                  <button onClick={() => handleDelete(account.id)} className="p-1 text-dark-500 hover:text-red-400 transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </motion.div>
+              );
+            })}
           </AnimatePresence>
         </div>
       )}

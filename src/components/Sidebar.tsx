@@ -17,11 +17,11 @@ const navItems = [
   { id: 'bios', label: 'Bios', icon: FileText },
   { id: 'shadowban-checker', label: 'Ban Check', icon: Shield },
   { id: 'shadowban-fixer', label: 'Ban Fix', icon: Wrench },
-  { id: 'auto-swiper', label: 'Auto Swipe', icon: Heart },
   { id: 'auto-messager', label: 'AI Message', icon: Bot },
   { id: 'funnel-selector', label: 'Funnel', icon: ArrowRightLeft },
   { id: 'results', label: 'Results', icon: Trophy },
   { id: 'automation', label: 'Run', icon: Play },
+  { id: 'auto-swiper', label: 'Auto Swipe', icon: Heart },
 ];
 
 export function Sidebar({ activeSection, onNavigate }: SidebarProps) {

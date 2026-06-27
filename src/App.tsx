@@ -72,7 +72,7 @@ function App() {
         <div className="max-w-4xl mx-auto p-6 space-y-6">
           <ProxyInput proxies={proxies} onProxiesChange={setProxies} />
           
-          <AccountCredentials accounts={accounts} onAccountsChange={setAccounts} />
+          <AccountCredentials accounts={accounts} onAccountsChange={setAccounts} platform={activePlatform} />
           
           <SmsApiInput
             provider={smsProvider}
@@ -96,11 +96,9 @@ function App() {
           
           <BioSection bios={bios} onBiosChange={setBios} />
 
-          <ShadowbanChecker platform={activePlatform} />
+          <ShadowbanChecker platform={activePlatform} accounts={accounts} />
 
           <ShadowbanFixer platform={activePlatform} />
-
-          <AutoSwiper platform={activePlatform} />
 
           <AutoMessager platform={activePlatform} />
 
@@ -121,6 +119,8 @@ function App() {
             onStop={automation.stop}
             onReset={automation.reset}
           />
+
+          <AutoSwiper platform={activePlatform} />
         </div>
       </main>
     </div>

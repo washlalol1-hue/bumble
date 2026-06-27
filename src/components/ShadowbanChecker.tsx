@@ -2,20 +2,29 @@ import { useState } from 'react';
 import { Shield, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Platform } from './Header';
+import { Account } from '../types';
 
 interface ShadowbanCheckerProps {
   platform: Platform;
+  accounts: Account[];
 }
 
 type CheckStatus = 'idle' | 'checking' | 'clean' | 'shadowbanned';
 
-export function ShadowbanChecker({ platform }: ShadowbanCheckerProps) {
-  const [accountId, setAccountId] = useState('');
+interface AccountCheckResult {
+  accountId: string;
+  email: string;
+  status: CheckStatus;
+  details: string[];
+}
+
+export function ShadowbanChecker({ platform, accounts }: ShadowbanCheckerProps) {
+  const [selectedAccount, setSelectedAccount] = useState<string>('');
   const [status, setStatus] = useState<CheckStatus>('idle');
   const [details, setDetails] = useState<string[]>([]);
 
   const handleCheck = () => {
-    if (!accountId.trim()) return;
+    if (!selectedAccount) return;
     setStatus('checking');
     setDetails([]);
 
@@ -23,8 +32,10 @@ export function ShadowbanChecker({ platform }: ShadowbanCheckerProps) {
     setTimeout(() => {
       const isBanned = Math.random() > 0.5;
       setStatus(isBanned ? 'shadowbanned' : 'clean');
+      const account = accounts.find(a => a.id === selectedAccount);
       if (isBanned) {
         setDetails([
+          `Account: ${account?.email}`,
           'Profile visibility reduced by ~80%',
           'Swipe reach limited to low-priority queue',
           'Messages may not be delivered to matches',
@@ -32,6 +43,7 @@ export function ShadowbanChecker({ platform }: ShadowbanCheckerProps) {
         ]);
       } else {
         setDetails([
+          `Account: ${account?.email}`,
           'Profile is fully visible',
           'Normal swipe distribution active',
           'No restrictions detected',
@@ -57,27 +69,39 @@ export function ShadowbanChecker({ platform }: ShadowbanCheckerProps) {
         Check if your {platform.charAt(0).toUpperCase() + platform.slice(1)} account has been shadowbanned or restricted.
       </p>
 
-      <div className="flex gap-3 mb-4">
-        <input
-          type="text"
-          value={accountId}
-          onChange={(e) => setAccountId(e.target.value)}
-          placeholder="Enter account ID or email..."
-          className="input-field flex-1"
-        />
-        <button
-          onClick={handleCheck}
-          disabled={status === 'checking' || !accountId.trim()}
-          className="btn-primary flex items-center gap-2"
-        >
-          {status === 'checking' ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Shield className="w-4 h-4" />
-          )}
-          Check
-        </button>
-      </div>
+      {accounts.length === 0 ? (
+        <div className="p-4 bg-dark-800/50 rounded-lg border border-dark-700 text-center">
+          <p className="text-sm text-dark-400">No accounts created yet.</p>
+          <p className="text-xs text-dark-500 mt-1">Create an account first to check shadowban status.</p>
+        </div>
+      ) : (
+        <div className="flex gap-3 mb-4">
+          <select
+            value={selectedAccount}
+            onChange={(e) => setSelectedAccount(e.target.value)}
+            className="input-field flex-1"
+          >
+            <option value="">Select an account...</option>
+            {accounts.map((acc) => (
+              <option key={acc.id} value={acc.id}>
+                {acc.email} ({acc.type})
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={handleCheck}
+            disabled={status === 'checking' || !selectedAccount}
+            className="btn-primary flex items-center gap-2"
+          >
+            {status === 'checking' ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Shield className="w-4 h-4" />
+            )}
+            Check
+          </button>
+        </div>
+      )}
 
       {status !== 'idle' && status !== 'checking' && (
         <motion.div

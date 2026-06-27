@@ -88,7 +88,7 @@ export function ShadowbanFixer({ platform }: ShadowbanFixerProps) {
           }`}
         >
           <p className="font-medium text-sm">Soft Reset</p>
-          <p className="text-xs mt-1 opacity-70">Low risk, keeps profile data</p>
+          <p className="text-xs mt-1 opacity-70">Keeps profile, resets visibility</p>
         </button>
         <button
           onClick={() => setSelectedMethod('hard')}
@@ -99,7 +99,7 @@ export function ShadowbanFixer({ platform }: ShadowbanFixerProps) {
           }`}
         >
           <p className="font-medium text-sm">Hard Reset</p>
-          <p className="text-xs mt-1 opacity-70">Full wipe, new identity</p>
+          <p className="text-xs mt-1 opacity-70">Nukes everything, fresh start</p>
         </button>
       </div>
 

@@ -9,7 +9,7 @@ export interface Proxy {
   status?: 'untested' | 'valid' | 'invalid';
 }
 
-export type AccountType = 'facebook' | 'gmail';
+export type AccountType = 'facebook' | 'gmail' | 'icloud';
 
 export interface Account {
   id: string;

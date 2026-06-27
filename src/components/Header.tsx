@@ -25,7 +25,7 @@ export function Header({ isRunning, activePlatform, onPlatformChange }: HeaderPr
             <h1 className="text-xl font-bold bg-gradient-to-r from-brand-400 to-accent-400 bg-clip-text text-transparent">
               DA PANEL
             </h1>
-            <p className="text-xs text-dark-400">Automation Suite v2.0</p>
+            <p className="text-xs text-dark-400">Mr d</p>
           </div>
         </div>
 
