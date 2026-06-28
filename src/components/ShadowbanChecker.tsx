@@ -1,123 +1,101 @@
 import { useState } from 'react';
-import { Shield, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { Platform } from './Header';
+import { Shield, Search, CheckCircle, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { GmailAccount, TerminalLog, ShadowbanResult } from '../types';
+import { simulateShadowbanCheck, createLog } from '../utils/mockAutomation';
 
 interface ShadowbanCheckerProps {
-  platform: Platform;
+  accounts: GmailAccount[];
 }
 
-type CheckStatus = 'idle' | 'checking' | 'clean' | 'shadowbanned';
+export function ShadowbanChecker({ accounts }: ShadowbanCheckerProps) {
+  const [results, setResults] = useState<ShadowbanResult[]>([]);
+  const [isChecking, setIsChecking] = useState(false);
+  const [logs, setLogs] = useState<TerminalLog[]>([]);
 
-export function ShadowbanChecker({ platform }: ShadowbanCheckerProps) {
-  const [accountId, setAccountId] = useState('');
-  const [status, setStatus] = useState<CheckStatus>('idle');
-  const [details, setDetails] = useState<string[]>([]);
+  const handleCheck = async () => {
+    if (accounts.length === 0) return;
+    setIsChecking(true);
+    setResults([]);
+    setLogs([]);
 
-  const handleCheck = () => {
-    if (!accountId.trim()) return;
-    setStatus('checking');
-    setDetails([]);
+    for (const account of accounts) {
+      const status = await simulateShadowbanCheck(account.email, (log) => {
+        setLogs(prev => [...prev, log]);
+      });
 
-    // Simulate shadowban check
-    setTimeout(() => {
-      const isBanned = Math.random() > 0.5;
-      setStatus(isBanned ? 'shadowbanned' : 'clean');
-      if (isBanned) {
-        setDetails([
-          'Profile visibility reduced by ~80%',
-          'Swipe reach limited to low-priority queue',
-          'Messages may not be delivered to matches',
-          `Detected on ${platform.charAt(0).toUpperCase() + platform.slice(1)} servers`,
-        ]);
-      } else {
-        setDetails([
-          'Profile is fully visible',
-          'Normal swipe distribution active',
-          'No restrictions detected',
-        ]);
-      }
-    }, 2500);
+      setResults(prev => [...prev, {
+        accountId: account.id,
+        email: account.email,
+        status,
+        details: status === 'shadowbanned' ? 'Low visibility detected' : 'Normal exposure rate',
+      }]);
+    }
+
+    setIsChecking(false);
   };
 
   return (
-    <motion.section
-      id="shadowban-checker"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="card"
-    >
-      <div className="flex items-center gap-2 mb-4">
-        <Shield className="w-5 h-5 text-accent-400" />
-        <h2 className="text-lg font-semibold text-dark-100">Shadowban Checker</h2>
+    <div id="shadowban-checker" className="card">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-yellow-500/10 rounded-lg">
+          <Shield className="w-5 h-5 text-yellow-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-dark-100">Shadowban Checker</h3>
+          <p className="text-sm text-dark-400">Check if accounts are shadowbanned</p>
+        </div>
       </div>
 
-      <p className="text-sm text-dark-400 mb-4">
-        Check if your {platform.charAt(0).toUpperCase() + platform.slice(1)} account has been shadowbanned or restricted.
-      </p>
-
-      <div className="flex gap-3 mb-4">
-        <input
-          type="text"
-          value={accountId}
-          onChange={(e) => setAccountId(e.target.value)}
-          placeholder="Enter account ID or email..."
-          className="input-field flex-1"
-        />
+      <div className="space-y-3">
         <button
           onClick={handleCheck}
-          disabled={status === 'checking' || !accountId.trim()}
+          disabled={isChecking || accounts.length === 0}
           className="btn-primary flex items-center gap-2"
         >
-          {status === 'checking' ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Shield className="w-4 h-4" />
-          )}
-          Check
+          <Search className="w-4 h-4" />
+          {isChecking ? 'Checking...' : `Check ${accounts.length} Account${accounts.length !== 1 ? 's' : ''}`}
         </button>
+
+        {accounts.length === 0 && (
+          <p className="text-sm text-dark-500">Add Gmail accounts first to check</p>
+        )}
+
+        {/* Results */}
+        <AnimatePresence>
+          {results.length > 0 && (
+            <div className="space-y-2 mt-3">
+              {results.map((result, idx) => (
+                <motion.div
+                  key={result.accountId}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg border ${
+                    result.status === 'clean'
+                      ? 'bg-green-500/5 border-green-500/20'
+                      : 'bg-red-500/5 border-red-500/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {result.status === 'clean' ? (
+                      <CheckCircle className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <AlertTriangle className="w-4 h-4 text-red-400" />
+                    )}
+                    <span className="text-sm text-dark-200 font-mono">{result.email}</span>
+                  </div>
+                  <span className={`text-xs font-medium ${
+                    result.status === 'clean' ? 'text-green-400' : 'text-red-400'
+                  }`}>
+                    {result.status === 'clean' ? 'CLEAN' : 'SHADOWBANNED'}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </AnimatePresence>
       </div>
-
-      {status !== 'idle' && status !== 'checking' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`p-4 rounded-lg border ${
-            status === 'clean'
-              ? 'bg-green-500/10 border-green-500/30'
-              : 'bg-red-500/10 border-red-500/30'
-          }`}
-        >
-          <div className="flex items-center gap-2 mb-2">
-            {status === 'clean' ? (
-              <CheckCircle className="w-5 h-5 text-green-400" />
-            ) : (
-              <AlertTriangle className="w-5 h-5 text-red-400" />
-            )}
-            <span className={`font-semibold ${status === 'clean' ? 'text-green-400' : 'text-red-400'}`}>
-              {status === 'clean' ? 'Account is Clean' : 'Shadowban Detected'}
-            </span>
-          </div>
-          <ul className="space-y-1">
-            {details.map((detail, i) => (
-              <li key={i} className="text-sm text-dark-300 flex items-center gap-2">
-                <span className="w-1 h-1 rounded-full bg-dark-500" />
-                {detail}
-              </li>
-            ))}
-          </ul>
-        </motion.div>
-      )}
-
-      {status === 'checking' && (
-        <div className="flex items-center justify-center py-8">
-          <div className="flex flex-col items-center gap-3">
-            <Loader2 className="w-8 h-8 text-accent-400 animate-spin" />
-            <p className="text-sm text-dark-400">Analyzing account status...</p>
-          </div>
-        </div>
-      )}
-    </motion.section>
+    </div>
   );
 }
