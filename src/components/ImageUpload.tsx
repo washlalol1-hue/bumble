@@ -1,7 +1,5 @@
-import { useState, useCallback } from 'react';
-import { ImageIcon, X, Upload, AlertTriangle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import toast from 'react-hot-toast';
+import { useCallback } from 'react';
+import { Image, Upload, X } from 'lucide-react';
 import { ProfileImage } from '../types';
 
 interface ImageUploadProps {
@@ -10,149 +8,94 @@ interface ImageUploadProps {
 }
 
 export function ImageUpload({ images, onImagesChange }: ImageUploadProps) {
-  const [isDragging, setIsDragging] = useState(false);
-
   const handleFiles = useCallback((files: FileList | null) => {
     if (!files) return;
-    
+
     const newImages: ProfileImage[] = [];
-    Array.from(files).forEach(file => {
-      if (!file.type.startsWith('image/')) {
-        toast.error(`${file.name} is not an image`);
-        return;
+    Array.from(files).forEach((file) => {
+      if (file.type.startsWith('image/')) {
+        const preview = URL.createObjectURL(file);
+        newImages.push({
+          id: `img-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          file,
+          preview,
+          name: file.name,
+        });
       }
-      newImages.push({
-        id: crypto.randomUUID(),
-        file,
-        preview: URL.createObjectURL(file),
-        name: file.name,
-        size: file.size,
-      });
     });
 
-    if (images.length + newImages.length > 6) {
-      toast.error('Maximum 6 images allowed');
-      return;
-    }
-
     onImagesChange([...images, ...newImages]);
-    if (newImages.length > 0) {
-      toast.success(`Added ${newImages.length} image(s)`);
-    }
   }, [images, onImagesChange]);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    handleFiles(e.dataTransfer.files);
-  }, [handleFiles]);
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => setIsDragging(false);
-
-  const handleDelete = (id: string) => {
+  const removeImage = (id: string) => {
     const img = images.find(i => i.id === id);
     if (img) URL.revokeObjectURL(img.preview);
     onImagesChange(images.filter(i => i.id !== id));
   };
 
-  const handleBrowse = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.multiple = true;
-    input.onchange = (e) => handleFiles((e.target as HTMLInputElement).files);
-    input.click();
-  };
-
-  const formatSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    handleFiles(e.dataTransfer.files);
+  }, [handleFiles]);
 
   return (
-    <motion.section
-      id="images"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
-      className="card"
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-pink-500/20 rounded-lg">
-            <ImageIcon className="w-5 h-5 text-pink-400" />
-          </div>
-          <h2 className="text-lg font-semibold text-dark-100">Profile Images</h2>
-          {images.length > 0 && (
-            <span className="badge bg-pink-500/20 text-pink-300">{images.length}/6</span>
-          )}
+    <div id="images" className="card">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-violet-500/10 rounded-lg">
+          <Image className="w-5 h-5 text-violet-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-dark-100">Profile Pictures</h3>
+          <p className="text-sm text-dark-400">Upload images for profiles (shared across all accounts)</p>
         </div>
       </div>
 
-      {/* Drop zone */}
-      <div
-        onDrop={handleDrop}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onClick={handleBrowse}
-        className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
-          isDragging
-            ? 'border-brand-400 bg-brand-500/10'
-            : 'border-dark-600 hover:border-dark-400 hover:bg-dark-800/50'
-        }`}
-      >
-        <Upload className={`w-10 h-10 mx-auto mb-3 ${isDragging ? 'text-brand-400' : 'text-dark-500'}`} />
-        <p className="text-sm text-dark-300">Drop images here or click to browse</p>
-        <p className="text-xs text-dark-500 mt-1">JPG, PNG, WebP - Max 6 images</p>
-      </div>
+      <div className="space-y-3">
+        {/* Drop Zone */}
+        <label
+          onDrop={handleDrop}
+          onDragOver={(e) => e.preventDefault()}
+          className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-dark-600 rounded-xl hover:border-violet-500/50 hover:bg-violet-500/5 transition-all cursor-pointer"
+        >
+          <Upload className="w-8 h-8 text-dark-500 mb-2" />
+          <span className="text-sm text-dark-400">Drop images or click to upload</span>
+          <span className="text-xs text-dark-500 mt-1">JPG, PNG, WebP</span>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => handleFiles(e.target.files)}
+            className="hidden"
+          />
+        </label>
 
-      {images.length > 6 && (
-        <div className="mt-3 flex items-center gap-2 text-yellow-400 text-sm">
-          <AlertTriangle className="w-4 h-4" />
-          <span>Maximum 6 images recommended</span>
-        </div>
-      )}
-
-      {/* Preview grid */}
-      {images.length > 0 && (
-        <div className="mt-4 grid grid-cols-3 gap-3">
-          <AnimatePresence>
+        {/* Image Grid */}
+        {images.length > 0 && (
+          <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
             {images.map((img) => (
-              <motion.div
-                key={img.id}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="relative group rounded-lg overflow-hidden border border-dark-700"
-              >
+              <div key={img.id} className="relative group aspect-square rounded-lg overflow-hidden border border-dark-600">
                 <img
                   src={img.preview}
                   alt={img.name}
-                  className="w-full h-24 object-cover"
+                  className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(img.id); }}
-                    className="p-1.5 bg-red-500 rounded-full text-white"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </div>
-                <div className="p-1.5 bg-dark-800">
-                  <p className="text-xs text-dark-400 truncate">{img.name}</p>
-                  <p className="text-xs text-dark-500">{formatSize(img.size)}</p>
-                </div>
-              </motion.div>
+                <button
+                  onClick={() => removeImage(img.id)}
+                  className="absolute top-1 right-1 p-1 bg-dark-900/80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="w-3 h-3 text-white" />
+                </button>
+              </div>
             ))}
-          </AnimatePresence>
-        </div>
-      )}
-    </motion.section>
+          </div>
+        )}
+
+        {images.length > 0 && (
+          <div className="text-sm text-dark-400">
+            {images.length} image{images.length !== 1 ? 's' : ''} loaded
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

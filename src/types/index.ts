@@ -1,31 +1,19 @@
-export interface Proxy {
+export interface GmailAccount {
   id: string;
-  raw: string;
-  protocol: 'http' | 'https' | 'socks5';
-  host: string;
-  port: string;
-  username?: string;
-  password?: string;
-  status?: 'untested' | 'valid' | 'invalid';
-}
-
-export type AccountType = 'facebook' | 'gmail' | 'icloud';
-
-export interface Account {
-  id: string;
-  type: AccountType;
   email: string;
   password: string;
 }
 
-export type SmsProvider = 'smspool' | 'sms-activate' | 'verifywithsms' | 'textverified' | 'custom';
+export interface ProxyConfig {
+  raw: string;
+}
+
+export type SmsProvider = 'smspool' | 'sms-activate' | 'textverified' | 'custom';
 
 export interface SmsConfig {
   provider: SmsProvider;
   apiKey: string;
-  apiUrl?: string;
   countryCode: string;
-  status: 'disconnected' | 'connected' | 'error';
 }
 
 export interface ProfileImage {
@@ -33,52 +21,70 @@ export interface ProfileImage {
   file: File;
   preview: string;
   name: string;
-  size: number;
 }
 
 export interface NameConfig {
   mode: 'auto' | 'manual';
   manualNames: string[];
-  previewNames: { first: string; last: string }[];
 }
 
 export interface Bio {
   id: string;
   text: string;
-  isRewriting?: boolean;
 }
 
-export interface TokenResult {
+export interface AgeConfig {
+  min: number;
+  max: number;
+}
+
+export interface CreatedAccount {
   id: string;
-  email: string;
-  status: 'success' | 'failed';
-  token: string;
   accountId: string;
-  userId: string;
+  email: string;
+  name: string;
+  age: number;
+  images: string[];
+  status: 'creating' | 'success' | 'failed';
+  token?: string;
   createdAt: string;
-  message: string;
 }
 
-export type LogLevel = 'info' | 'warning' | 'success' | 'error';
+export type LogLevel = 'info' | 'warning' | 'success' | 'error' | 'system';
 
-export interface AutomationLog {
+export interface TerminalLog {
   id: string;
   timestamp: string;
   level: LogLevel;
   message: string;
 }
 
-export interface AppState {
-  proxies: Proxy[];
-  accounts: Account[];
-  smsConfig: SmsConfig;
-  images: ProfileImage[];
-  nameConfig: NameConfig;
-  bios: Bio[];
-  results: TokenResult[];
-  logs: AutomationLog[];
-  isRunning: boolean;
-  progress: number;
-  currentAccount: number;
-  totalAccounts: number;
+export interface AutoSwiperConfig {
+  enabled: boolean;
+  swipesPerMinute: number;
+  duration: number; // minutes
+  likeRatio: number; // 0-100 percentage of right swipes
+}
+
+export interface AIChatbotConfig {
+  enabled: boolean;
+  personality: 'flirty' | 'chill' | 'funny' | 'deep';
+  responseDelay: number; // seconds
+  autoReply: boolean;
+}
+
+export type FunnelPlatform = 'telegram' | 'whatsapp' | 'instagram';
+
+export interface FunnelConfig {
+  platform: FunnelPlatform;
+  username: string;
+  message: string;
+  enabled: boolean;
+}
+
+export interface ShadowbanResult {
+  accountId: string;
+  email: string;
+  status: 'clean' | 'shadowbanned' | 'checking' | 'fixed' | 'fixing';
+  details?: string;
 }

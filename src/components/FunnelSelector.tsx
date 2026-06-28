@@ -1,150 +1,107 @@
 import { useState } from 'react';
-import { ArrowRightLeft, MessageSquare } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowRightLeft, Send, ToggleLeft, ToggleRight } from 'lucide-react';
+import { FunnelPlatform } from '../types';
 
-export type FunnelPlatform = 'snapchat' | 'telegram' | 'whatsapp';
-
-interface FunnelSelectorProps {}
-
-interface FunnelConfig {
-  platform: FunnelPlatform;
-  enabled: boolean;
-  username: string;
-  autoInsert: boolean;
-  messageTemplate: string;
+interface FunnelItem {
+  id: FunnelPlatform;
+  label: string;
+  emoji: string;
+  placeholder: string;
+  color: string;
 }
 
-const funnelPlatforms: { id: FunnelPlatform; label: string; emoji: string; color: string }[] = [
-  { id: 'snapchat', label: 'Snapchat', emoji: '👻', color: 'yellow' },
-  { id: 'telegram', label: 'Telegram', emoji: '✈️', color: 'blue' },
-  { id: 'whatsapp', label: 'WhatsApp', emoji: '💬', color: 'green' },
+const funnelPlatforms: FunnelItem[] = [
+  { id: 'telegram', label: 'Telegram', emoji: '✈️', placeholder: '@username', color: 'blue' },
+  { id: 'whatsapp', label: 'WhatsApp', emoji: '📱', placeholder: '+1234567890', color: 'green' },
+  { id: 'instagram', label: 'Instagram', emoji: '📸', placeholder: '@username', color: 'pink' },
 ];
 
-export function FunnelSelector({}: FunnelSelectorProps) {
-  const [funnels, setFunnels] = useState<FunnelConfig[]>([
-    { platform: 'snapchat', enabled: false, username: '', autoInsert: true, messageTemplate: 'Add me on snap: {username}' },
-    { platform: 'telegram', enabled: false, username: '', autoInsert: true, messageTemplate: 'Hmu on telegram: {username}' },
-    { platform: 'whatsapp', enabled: false, username: '', autoInsert: true, messageTemplate: 'Text me on whatsapp: {username}' },
-  ]);
+export function FunnelSelector() {
+  const [activePlatform, setActivePlatform] = useState<FunnelPlatform>('telegram');
+  const [username, setUsername] = useState('');
+  const [message, setMessage] = useState('');
+  const [enabled, setEnabled] = useState(false);
 
-  const updateFunnel = (platform: FunnelPlatform, updates: Partial<FunnelConfig>) => {
-    setFunnels(prev =>
-      prev.map(f => f.platform === platform ? { ...f, ...updates } : f)
-    );
-  };
-
-
-  const getColorClasses = (color: string, enabled: boolean) => {
-    if (!enabled) return 'border-dark-700 bg-dark-800 text-dark-400';
-    switch (color) {
-      case 'yellow': return 'border-yellow-500/50 bg-yellow-500/10 text-yellow-300';
-      case 'blue': return 'border-blue-500/50 bg-blue-500/10 text-blue-300';
-      case 'green': return 'border-green-500/50 bg-green-500/10 text-green-300';
-      default: return 'border-dark-700 bg-dark-800 text-dark-400';
+  const getColorClasses = (platform: FunnelPlatform, isActive: boolean) => {
+    if (!isActive) return 'bg-dark-800 text-dark-400 border border-dark-700 hover:border-dark-500';
+    switch (platform) {
+      case 'telegram': return 'bg-blue-500/20 text-blue-300 border border-blue-500/40';
+      case 'whatsapp': return 'bg-green-500/20 text-green-300 border border-green-500/40';
+      case 'instagram': return 'bg-pink-500/20 text-pink-300 border border-pink-500/40';
     }
   };
 
   return (
-    <motion.section
-      id="funnel-selector"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.7 }}
-      className="card"
-    >
-      <div className="flex items-center gap-2 mb-4">
-        <ArrowRightLeft className="w-5 h-5 text-green-400" />
-        <h2 className="text-lg font-semibold text-dark-100">Funnel Selector</h2>
+    <div id="funnel" className="card">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-amber-500/10 rounded-lg">
+          <ArrowRightLeft className="w-5 h-5 text-amber-400" />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-dark-100">Funnel</h3>
+          <p className="text-sm text-dark-400">Route matches to Telegram, WhatsApp, or Instagram</p>
+        </div>
+        <button onClick={() => setEnabled(!enabled)} className="ml-auto">
+          {enabled ? (
+            <ToggleRight className="w-8 h-8 text-amber-400" />
+          ) : (
+            <ToggleLeft className="w-8 h-8 text-dark-500" />
+          )}
+        </button>
       </div>
 
-      <p className="text-sm text-dark-400 mb-4">
-        Choose where to redirect matches. Auto-insert your handle into conversations.
-      </p>
+      {enabled && (
+        <div className="space-y-4">
+          {/* Platform Selector */}
+          <div className="grid grid-cols-3 gap-2">
+            {funnelPlatforms.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setActivePlatform(p.id)}
+                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${getColorClasses(p.id, activePlatform === p.id)}`}
+              >
+                <span>{p.emoji}</span>
+                <span>{p.label}</span>
+              </button>
+            ))}
+          </div>
 
-      <div className="space-y-4">
-        {funnelPlatforms.map((fp) => {
-          const funnel = funnels.find(f => f.platform === fp.id)!;
-          return (
-            <div
-              key={fp.id}
-              className={`p-4 rounded-lg border transition-all ${getColorClasses(fp.color, funnel.enabled)}`}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{fp.emoji}</span>
-                  <span className="font-medium text-sm">{fp.label}</span>
-                </div>
-                <div
-                  onClick={() => updateFunnel(fp.id, { enabled: !funnel.enabled })}
-                  className={`w-10 h-5 rounded-full transition-colors cursor-pointer flex items-center ${
-                    funnel.enabled ? 'bg-accent-500' : 'bg-dark-600'
-                  }`}
-                >
-                  <div
-                    className={`w-4 h-4 rounded-full bg-white transition-transform ${
-                      funnel.enabled ? 'translate-x-5' : 'translate-x-0.5'
-                    }`}
-                  />
-                </div>
-              </div>
+          {/* Username/Contact */}
+          <div>
+            <label className="text-sm text-dark-300 mb-1 block">
+              Your {funnelPlatforms.find(p => p.id === activePlatform)?.label} handle
+            </label>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder={funnelPlatforms.find(p => p.id === activePlatform)?.placeholder}
+              className="input-field font-mono text-sm"
+            />
+          </div>
 
+          {/* Message Template */}
+          <div>
+            <label className="text-sm text-dark-300 mb-1 block">
+              Funnel message (sent after matching)
+            </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder={`Hey! Let's chat on ${funnelPlatforms.find(p => p.id === activePlatform)?.label} — I'm more active there 😊`}
+              className="input-field h-20 text-sm resize-none"
+            />
+          </div>
 
-              {funnel.enabled && (
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs text-dark-400 mb-1 block">Username / Handle</label>
-                    <input
-                      type="text"
-                      value={funnel.username}
-                      onChange={(e) => updateFunnel(fp.id, { username: e.target.value })}
-                      placeholder={`Your ${fp.label} username...`}
-                      className="input-field text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-dark-400 mb-1 block">Message Template</label>
-                    <input
-                      type="text"
-                      value={funnel.messageTemplate}
-                      onChange={(e) => updateFunnel(fp.id, { messageTemplate: e.target.value })}
-                      className="input-field text-sm"
-                    />
-                    <p className="text-xs text-dark-600 mt-1">Use {'{username}'} as placeholder</p>
-                  </div>
-                  <label className="flex items-center justify-between cursor-pointer">
-                    <span className="text-xs text-dark-400">Auto-insert in conversations</span>
-                    <div
-                      onClick={() => updateFunnel(fp.id, { autoInsert: !funnel.autoInsert })}
-                      className={`w-8 h-4 rounded-full transition-colors cursor-pointer flex items-center ${
-                        funnel.autoInsert ? 'bg-accent-500' : 'bg-dark-600'
-                      }`}
-                    >
-                      <div
-                        className={`w-3 h-3 rounded-full bg-white transition-transform ${
-                          funnel.autoInsert ? 'translate-x-4' : 'translate-x-0.5'
-                        }`}
-                      />
-                    </div>
-                  </label>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Summary */}
-      {funnels.some(f => f.enabled) && (
-        <div className="mt-4 p-3 bg-dark-800/50 rounded-lg border border-dark-700">
-          <div className="flex items-start gap-2">
-            <MessageSquare className="w-4 h-4 text-dark-500 mt-0.5" />
-            <p className="text-xs text-dark-500">
-              Active funnels: {funnels.filter(f => f.enabled).map(f => f.platform).join(', ')}. 
-              Matches will be redirected after 3-5 messages.
-            </p>
+          {/* Status */}
+          <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/5 border border-amber-500/20 rounded-lg">
+            <Send className="w-4 h-4 text-amber-400" />
+            <span className="text-sm text-amber-300">
+              Funneling to {funnelPlatforms.find(p => p.id === activePlatform)?.label}: {username || 'not set'}
+            </span>
           </div>
         </div>
       )}
-    </motion.section>
+    </div>
   );
 }

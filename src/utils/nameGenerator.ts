@@ -8,25 +8,29 @@ const girlNames = [
   'Madison', 'Willow', 'Paisley', 'Bella', 'Claire', 'Skylar',
   'Layla', 'Naomi', 'Aaliyah', 'Ruby', 'Eva', 'Ivy', 'Sadie',
   'Aubrey', 'Jade', 'Maya', 'Piper', 'Ariana', 'Valentina', 'Kennedy',
-  'Kinsley', 'Delilah', 'Morgan', 'Clara', 'Jasmine', 'Melody'
+  'Kinsley', 'Delilah', 'Morgan', 'Clara', 'Jasmine', 'Melody',
+  'Autumn', 'Genesis', 'Emilia', 'Kaylee', 'Anna', 'Madelyn', 'Hailey',
+  'Caroline', 'Sarah', 'Alexis', 'Samantha', 'Ashley', 'Alyssa', 'Brianna',
 ];
 
-export function generateRandomName(): { first: string } {
-  const first = girlNames[Math.floor(Math.random() * girlNames.length)];
-  return { first };
+export function generateRandomName(): string {
+  return girlNames[Math.floor(Math.random() * girlNames.length)];
 }
 
-export function generateMultipleNames(count: number): { first: string }[] {
-  const names: { first: string }[] = [];
+export function generateMultipleNames(count: number): string[] {
+  const names: string[] = [];
   const used = new Set<string>();
   for (let i = 0; i < count; i++) {
     let name = girlNames[Math.floor(Math.random() * girlNames.length)];
-    // Avoid duplicates in preview
     while (used.has(name) && used.size < girlNames.length) {
       name = girlNames[Math.floor(Math.random() * girlNames.length)];
     }
     used.add(name);
-    names.push({ first: name });
+    names.push(name);
   }
   return names;
+}
+
+export function generateRandomAge(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
