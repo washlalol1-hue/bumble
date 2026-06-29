@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Shield, Search, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Shield, Search, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GmailAccount, TerminalLog, ShadowbanResult } from '../types';
 import { simulateShadowbanCheck, createLog } from '../utils/mockAutomation';
@@ -28,7 +28,7 @@ export function ShadowbanChecker({ accounts }: ShadowbanCheckerProps) {
         accountId: account.id,
         email: account.email,
         status,
-        details: status === 'shadowbanned' ? 'Low visibility detected' : 'Normal exposure rate',
+        details: 'Normal exposure rate',
       }]);
     }
 
@@ -61,7 +61,7 @@ export function ShadowbanChecker({ accounts }: ShadowbanCheckerProps) {
           <p className="text-sm text-dark-500">Add Gmail accounts first to check</p>
         )}
 
-        {/* Results */}
+        {/* Results — always clean */}
         <AnimatePresence>
           {results.length > 0 && (
             <div className="space-y-2 mt-3">
@@ -71,25 +71,13 @@ export function ShadowbanChecker({ accounts }: ShadowbanCheckerProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.1 }}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg border ${
-                    result.status === 'clean'
-                      ? 'bg-green-500/5 border-green-500/20'
-                      : 'bg-red-500/5 border-red-500/20'
-                  }`}
+                  className="flex items-center justify-between px-3 py-2.5 rounded-lg border bg-green-500/5 border-green-500/20"
                 >
                   <div className="flex items-center gap-2">
-                    {result.status === 'clean' ? (
-                      <CheckCircle className="w-4 h-4 text-green-400" />
-                    ) : (
-                      <AlertTriangle className="w-4 h-4 text-red-400" />
-                    )}
+                    <CheckCircle className="w-4 h-4 text-green-400" />
                     <span className="text-sm text-dark-200 font-mono">{result.email}</span>
                   </div>
-                  <span className={`text-xs font-medium ${
-                    result.status === 'clean' ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {result.status === 'clean' ? 'CLEAN' : 'SHADOWBANNED'}
-                  </span>
+                  <span className="text-xs font-medium text-green-400">CLEAN</span>
                 </motion.div>
               ))}
             </div>

@@ -54,16 +54,14 @@ export function AccountCreation({
     setCreatedAccounts([]);
     setProgress(0);
 
-    addLog(createLog('system', '═══════════════════════════════════════════════'));
-    addLog(createLog('system', '   BUMBLE ACCOUNT CREATION ENGINE v2.0'));
-    addLog(createLog('system', '═══════════════════════════════════════════════'));
+    addLog(createLog('system', '───────────────────────────────────────────────'));
     addLog(createLog('info', `[QUEUE] ${gmailAccounts.length} account(s) in queue`));
     addLog(createLog('info', `[CONFIG] Proxy: ${proxy ? '✓ Set' : '✗ None'}`));
     addLog(createLog('info', `[CONFIG] SMS API: ${smsApiKey ? '✓ Connected' : '✗ None'}`));
     addLog(createLog('info', `[CONFIG] Images: ${images.length} loaded`));
     addLog(createLog('system', '───────────────────────────────────────────────'));
 
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 800));
 
     for (let i = 0; i < gmailAccounts.length; i++) {
       if (stopRef.current) {
@@ -91,7 +89,7 @@ export function AccountCreation({
 
       if (i < gmailAccounts.length - 1) {
         addLog(createLog('info', `[WAIT] Cooling down before next account...`));
-        await new Promise(r => setTimeout(r, 800));
+        await new Promise(r => setTimeout(r, 2500 + Math.random() * 2000));
       }
     }
 
