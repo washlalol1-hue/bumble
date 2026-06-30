@@ -10,12 +10,13 @@ import { BioSection } from './components/BioSection';
 import { AgeSelector } from './components/AgeSelector';
 import { ImageUpload } from './components/ImageUpload';
 import { AccountCreation } from './components/AccountCreation';
+import { ForceVerify } from './components/ForceVerify';
 import { AutoSwiper } from './components/AutoSwiper';
 import { AIChatbot } from './components/AIChatbot';
 import { FunnelSelector } from './components/FunnelSelector';
 import { ShadowbanChecker } from './components/ShadowbanChecker';
 import { ShadowbanRemover } from './components/ShadowbanRemover';
-import { GmailAccount, SmsProvider, Bio, ProfileImage } from './types';
+import { GmailAccount, SmsProvider, Bio, ProfileImage, CreatedAccount } from './types';
 
 function App() {
   const [activeSection, setActiveSection] = useState('gmail');
@@ -46,6 +47,9 @@ function App() {
   // 7. Images
   const [images, setImages] = useState<ProfileImage[]>([]);
 
+  // Created accounts (lifted from AccountCreation for ForceVerify access)
+  const [createdAccounts, setCreatedAccounts] = useState<CreatedAccount[]>([]);
+
   // Parse manual names into array
   const parsedNames = manualNames
     .split('\n')
@@ -58,6 +62,14 @@ function App() {
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+  }, []);
+
+  const handleAccountVerified = useCallback((accountId: string) => {
+    setCreatedAccounts(prev =>
+      prev.map(acc =>
+        acc.id === accountId ? { ...acc, verified: true } : acc
+      )
+    );
   }, []);
 
   return (
@@ -145,6 +157,14 @@ function App() {
             ageMax={ageMax}
             images={images}
             nameMode={nameMode}
+            createdAccounts={createdAccounts}
+            onAccountsChange={setCreatedAccounts}
+          />
+
+          {/* 8.5 Force Verify — only shows after accounts are created */}
+          <ForceVerify
+            createdAccounts={createdAccounts}
+            onAccountVerified={handleAccountVerified}
           />
 
           {/* Separator */}

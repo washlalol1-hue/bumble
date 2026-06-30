@@ -48,6 +48,7 @@ export interface CreatedAccount {
   status: 'creating' | 'success' | 'failed';
   token?: string;
   createdAt: string;
+  verified?: boolean;
 }
 
 export type LogLevel = 'info' | 'warning' | 'success' | 'error' | 'system';

@@ -1,6 +1,6 @@
 import { 
   Mail, Globe, MessageSquare, Type, FileText, Calendar,
-  Image, Play, Heart, Bot, ArrowRightLeft, Shield, Wrench
+  Image, Play, BadgeCheck, Heart, Bot, ArrowRightLeft, Shield, Wrench
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -17,6 +17,7 @@ const navItems = [
   { id: 'age', label: 'Age', icon: Calendar },
   { id: 'images', label: 'Pictures', icon: Image },
   { id: 'create-accounts', label: 'Create', icon: Play },
+  { id: 'force-verify', label: 'Verify', icon: BadgeCheck },
   { id: 'auto-swiper', label: 'Auto Swipe', icon: Heart },
   { id: 'ai-chatbot', label: 'AI Chat', icon: Bot },
   { id: 'funnel', label: 'Funnel', icon: ArrowRightLeft },
@@ -35,7 +36,7 @@ export function Sidebar({ activeSection, onNavigate }: SidebarProps) {
           return (
             <div key={item.id}>
               {/* Separator before automation section */}
-              {idx === 8 && (
+              {idx === 9 && (
                 <div className="my-2 border-t border-dark-700/50" />
               )}
               <button

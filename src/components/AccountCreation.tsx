@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Square, Terminal, CheckCircle, XCircle, User, Image } from 'lucide-react';
+import { Play, Square, Terminal, CheckCircle, XCircle, User, Image, BadgeCheck } from 'lucide-react';
 import { CreatedAccount, TerminalLog, GmailAccount, ProfileImage } from '../types';
 import { simulateAccountCreation, createLog } from '../utils/mockAutomation';
 import { generateRandomName, generateRandomAge } from '../utils/nameGenerator';
@@ -15,6 +15,8 @@ interface AccountCreationProps {
   ageMax: number;
   images: ProfileImage[];
   nameMode: 'auto' | 'manual';
+  createdAccounts: CreatedAccount[];
+  onAccountsChange: (accounts: CreatedAccount[]) => void;
 }
 
 export function AccountCreation({
@@ -27,10 +29,11 @@ export function AccountCreation({
   ageMax,
   images,
   nameMode,
+  createdAccounts,
+  onAccountsChange,
 }: AccountCreationProps) {
   const [isRunning, setIsRunning] = useState(false);
   const [logs, setLogs] = useState<TerminalLog[]>([]);
-  const [createdAccounts, setCreatedAccounts] = useState<CreatedAccount[]>([]);
   const [progress, setProgress] = useState(0);
   const terminalRef = useRef<HTMLDivElement>(null);
   const stopRef = useRef(false);
@@ -51,7 +54,7 @@ export function AccountCreation({
     setIsRunning(true);
     stopRef.current = false;
     setLogs([]);
-    setCreatedAccounts([]);
+    onAccountsChange([]);
     setProgress(0);
 
     addLog(createLog('system', '───────────────────────────────────────────────'));
@@ -62,6 +65,8 @@ export function AccountCreation({
     addLog(createLog('system', '───────────────────────────────────────────────'));
 
     await new Promise(r => setTimeout(r, 800));
+
+    const results: CreatedAccount[] = [];
 
     for (let i = 0; i < gmailAccounts.length; i++) {
       if (stopRef.current) {
@@ -84,7 +89,8 @@ export function AccountCreation({
         addLog
       );
 
-      setCreatedAccounts(prev => [...prev, result]);
+      results.push(result);
+      onAccountsChange([...results]);
       setProgress(Math.round(((i + 1) / gmailAccounts.length) * 100));
 
       if (i < gmailAccounts.length - 1) {
@@ -253,6 +259,12 @@ export function AccountCreation({
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-dark-100">{account.name}</span>
                           <span className="text-dark-400 text-sm">• {account.age} years</span>
+                          {account.verified && (
+                            <span className="flex items-center gap-1 text-[10px] bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded-full font-medium">
+                              <BadgeCheck className="w-3 h-3" />
+                              Verified
+                            </span>
+                          )}
                         </div>
                         <span className="text-xs text-dark-400">{account.email}</span>
                       </div>
