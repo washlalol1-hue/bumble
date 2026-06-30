@@ -1,12 +1,55 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BadgeCheck, Upload, ShieldCheck, ChevronDown, Loader2 } from 'lucide-react';
+import { BadgeCheck, Upload, ShieldCheck, ChevronDown, Loader2, Hand, RefreshCw } from 'lucide-react';
 import { CreatedAccount, TerminalLog } from '../types';
 import { createLog } from '../utils/mockAutomation';
 
 interface ForceVerifyProps {
   createdAccounts: CreatedAccount[];
   onAccountVerified: (accountId: string) => void;
+}
+
+// Verification poses that Bumble asks you to copy
+const verificationPoses = [
+  {
+    id: 'open-hand',
+    label: 'Open Hand',
+    description: 'Hold up your open hand, palm facing camera',
+    emoji: '🖐️',
+    gestureText: 'Show open palm',
+  },
+  {
+    id: 'peace-sign',
+    label: 'Peace Sign',
+    description: 'Hold up a peace/victory sign',
+    emoji: '✌️',
+    gestureText: 'Show peace sign',
+  },
+  {
+    id: 'fist',
+    label: 'Fist',
+    description: 'Hold up a closed fist',
+    emoji: '✊',
+    gestureText: 'Show closed fist',
+  },
+  {
+    id: 'thumbs-up',
+    label: 'Thumbs Up',
+    description: 'Give a thumbs up gesture',
+    emoji: '👍',
+    gestureText: 'Show thumbs up',
+  },
+  {
+    id: 'hand-on-chest',
+    label: 'Hand on Chest',
+    description: 'Place your hand flat on your chest',
+    emoji: '🫶',
+    gestureText: 'Hand on chest',
+  },
+];
+
+function getRandomPose() {
+  return verificationPoses[Math.floor(Math.random() * verificationPoses.length)];
 }
 
 export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyProps) {
@@ -17,6 +60,8 @@ export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyP
   const [logs, setLogs] = useState<TerminalLog[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [currentPose, setCurrentPose] = useState(getRandomPose);
+  const [showPose, setShowPose] = useState(false);
   const terminalRef = useRef<HTMLDivElement>(null);
 
   const successfulAccounts = createdAccounts.filter(a => a.status === 'success');
@@ -27,6 +72,22 @@ export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyP
       terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
     }
   }, [logs]);
+
+  const handleSelectAccount = (accId: string) => {
+    setSelectedAccountId(accId);
+    setDropdownOpen(false);
+    setShowSuccess(false);
+    setLogs([]);
+    setVerifyImage(null);
+    setVerifyImageName('');
+    // Show a random pose when account is selected
+    setCurrentPose(getRandomPose());
+    setShowPose(true);
+  };
+
+  const handleNewPose = () => {
+    setCurrentPose(getRandomPose());
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -51,8 +112,10 @@ export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyP
       { msg: `[VERIFY] Starting force verification for ${account.name}...`, level: 'system' as const, delay: 800 },
       { msg: `[VERIFY] Uploading verification selfie...`, level: 'info' as const, delay: 1500 },
       { msg: `[VERIFY] Image uploaded: ${verifyImageName}`, level: 'info' as const, delay: 1000 },
+      { msg: `[VERIFY] Pose detected: ${currentPose.label}`, level: 'info' as const, delay: 1800 },
       { msg: `[VERIFY] Submitting to verification API...`, level: 'info' as const, delay: 2000 },
       { msg: `[VERIFY] Analyzing facial match...`, level: 'info' as const, delay: 2500 },
+      { msg: `[VERIFY] Pose match: ✓ Correct gesture detected`, level: 'success' as const, delay: 1500 },
       { msg: `[VERIFY] Match confidence: ${(Math.random() * 5 + 95).toFixed(1)}%`, level: 'info' as const, delay: 1200 },
       { msg: `[VERIFY] Applying verified badge to account ${account.accountId}...`, level: 'info' as const, delay: 1500 },
       { msg: `[VERIFY] ✓ Account successfully verified!`, level: 'success' as const, delay: 800 },
@@ -67,8 +130,8 @@ export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyP
     onAccountVerified(selectedAccountId);
     setIsVerifying(false);
     setShowSuccess(true);
+    setShowPose(false);
 
-    // Clear after showing success
     setTimeout(() => {
       setVerifyImage(null);
       setVerifyImageName('');
@@ -123,12 +186,7 @@ export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyP
                   {successfulAccounts.map((acc) => (
                     <button
                       key={acc.id}
-                      onClick={() => {
-                        setSelectedAccountId(acc.id);
-                        setDropdownOpen(false);
-                        setShowSuccess(false);
-                        setLogs([]);
-                      }}
+                      onClick={() => handleSelectAccount(acc.id)}
                       className={`w-full flex items-center justify-between px-4 py-3 hover:bg-dark-700 transition-colors text-left ${
                         selectedAccountId === acc.id ? 'bg-dark-700' : ''
                       }`}
@@ -155,15 +213,54 @@ export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyP
           </div>
         </div>
 
+        {/* Pose Prompt — shown after selecting account */}
+        {selectedAccountId && showPose && !selectedAccount?.verified && !isVerifying && !showSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 bg-dark-800 border border-dark-600 rounded-xl"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Hand className="w-4 h-4 text-amber-400" />
+                <span className="text-sm font-medium text-dark-200">Copy this pose for verification</span>
+              </div>
+              <button
+                onClick={handleNewPose}
+                className="flex items-center gap-1 text-xs text-dark-400 hover:text-dark-200 transition-colors"
+              >
+                <RefreshCw className="w-3 h-3" />
+                New pose
+              </button>
+            </div>
+
+            {/* Pose Display */}
+            <div className="flex items-center gap-4">
+              <div className="w-28 h-36 bg-gradient-to-b from-yellow-400/20 to-yellow-600/10 border-2 border-yellow-500/30 rounded-xl flex flex-col items-center justify-center gap-2">
+                <span className="text-5xl">{currentPose.emoji}</span>
+                <span className="text-xs text-yellow-300 font-medium">{currentPose.gestureText}</span>
+              </div>
+              <div className="flex-1">
+                <h4 className="text-sm font-semibold text-dark-100 mb-1">{currentPose.label}</h4>
+                <p className="text-xs text-dark-400 mb-3">{currentPose.description}</p>
+                <div className="flex items-center gap-2 text-[10px] text-dark-500 bg-dark-900 px-2.5 py-1.5 rounded-lg border border-dark-700">
+                  <span>📸</span>
+                  <span>Take a selfie matching this pose, then upload below</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Image Upload for Verification */}
-        {selectedAccountId && (
+        {selectedAccountId && showPose && !selectedAccount?.verified && (
           <div>
-            <label className="text-sm text-dark-300 mb-2 block">Upload Verification Selfie</label>
+            <label className="text-sm text-dark-300 mb-2 block">Upload Verification Selfie (matching the pose above)</label>
             {!verifyImage ? (
               <label className="flex flex-col items-center justify-center h-28 border-2 border-dashed border-dark-600 rounded-xl hover:border-blue-500/50 hover:bg-blue-500/5 transition-all cursor-pointer">
                 <Upload className="w-6 h-6 text-dark-500 mb-1" />
-                <span className="text-sm text-dark-400">Click to upload verification photo</span>
-                <span className="text-xs text-dark-500 mt-0.5">This image will be sent to verify</span>
+                <span className="text-sm text-dark-400">Click to upload your "{currentPose.label}" selfie</span>
+                <span className="text-xs text-dark-500 mt-0.5">Must match the pose shown above</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -178,7 +275,7 @@ export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyP
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-dark-200">{verifyImageName}</p>
-                  <p className="text-xs text-dark-500">Ready to submit for verification</p>
+                  <p className="text-xs text-dark-500">Pose: {currentPose.label} {currentPose.emoji}</p>
                 </div>
                 <button
                   onClick={() => { setVerifyImage(null); setVerifyImageName(''); }}
