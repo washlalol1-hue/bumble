@@ -12,39 +12,46 @@ interface ForceVerifyProps {
 // Verification poses that Bumble asks you to copy
 const verificationPoses = [
   {
-    id: 'open-hand',
+    id: 'pose-1',
+    image: '/poses/pose-1.png',
     label: 'Open Hand',
     description: 'Hold up your open hand, palm facing camera',
-    emoji: '🖐️',
-    gestureText: 'Show open palm',
   },
   {
-    id: 'peace-sign',
+    id: 'pose-2',
+    image: '/poses/pose-2.png',
     label: 'Peace Sign',
     description: 'Hold up a peace/victory sign',
-    emoji: '✌️',
-    gestureText: 'Show peace sign',
   },
   {
-    id: 'fist',
+    id: 'pose-3',
+    image: '/poses/pose-3.png',
     label: 'Fist',
     description: 'Hold up a closed fist',
-    emoji: '✊',
-    gestureText: 'Show closed fist',
   },
   {
-    id: 'thumbs-up',
+    id: 'pose-4',
+    image: '/poses/pose-4.png',
     label: 'Thumbs Up',
     description: 'Give a thumbs up gesture',
-    emoji: '👍',
-    gestureText: 'Show thumbs up',
   },
   {
-    id: 'hand-on-chest',
+    id: 'pose-5',
+    image: '/poses/pose-5.png',
     label: 'Hand on Chest',
     description: 'Place your hand flat on your chest',
-    emoji: '🫶',
-    gestureText: 'Hand on chest',
+  },
+  {
+    id: 'pose-6',
+    image: '/poses/pose-6.png',
+    label: 'Pose 6',
+    description: 'Copy this exact pose',
+  },
+  {
+    id: 'pose-7',
+    image: '/poses/pose-7.png',
+    label: 'Pose 7',
+    description: 'Copy this exact pose',
   },
 ];
 
@@ -236,9 +243,12 @@ export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyP
 
             {/* Pose Display */}
             <div className="flex items-center gap-4">
-              <div className="w-28 h-36 bg-gradient-to-b from-yellow-400/20 to-yellow-600/10 border-2 border-yellow-500/30 rounded-xl flex flex-col items-center justify-center gap-2">
-                <span className="text-5xl">{currentPose.emoji}</span>
-                <span className="text-xs text-yellow-300 font-medium">{currentPose.gestureText}</span>
+              <div className="w-32 h-40 bg-dark-900 border-2 border-yellow-500/30 rounded-xl overflow-hidden">
+                <img
+                  src={currentPose.image}
+                  alt={currentPose.label}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-dark-100 mb-1">{currentPose.label}</h4>
@@ -259,7 +269,7 @@ export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyP
             {!verifyImage ? (
               <label className="flex flex-col items-center justify-center h-28 border-2 border-dashed border-dark-600 rounded-xl hover:border-blue-500/50 hover:bg-blue-500/5 transition-all cursor-pointer">
                 <Upload className="w-6 h-6 text-dark-500 mb-1" />
-                <span className="text-sm text-dark-400">Click to upload your "{currentPose.label}" selfie</span>
+                <span className="text-sm text-dark-400">Click to upload your selfie matching the pose</span>
                 <span className="text-xs text-dark-500 mt-0.5">Must match the pose shown above</span>
                 <input
                   type="file"
@@ -275,7 +285,7 @@ export function ForceVerify({ createdAccounts, onAccountVerified }: ForceVerifyP
                 </div>
                 <div className="flex-1">
                   <p className="text-sm text-dark-200">{verifyImageName}</p>
-                  <p className="text-xs text-dark-500">Pose: {currentPose.label} {currentPose.emoji}</p>
+                  <p className="text-xs text-dark-500">Pose: {currentPose.label}</p>
                 </div>
                 <button
                   onClick={() => { setVerifyImage(null); setVerifyImageName(''); }}
