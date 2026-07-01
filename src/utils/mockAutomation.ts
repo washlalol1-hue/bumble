@@ -14,7 +14,7 @@ function generateUUID(): string {
 }
 
 function generateAccountId(): string {
-  return `BM-${Math.floor(Math.random() * 9000000 + 1000000)}`;
+  return `BD-${Math.floor(Math.random() * 9000000 + 1000000)}`;
 }
 
 export function createLog(level: LogLevel, message: string): TerminalLog {

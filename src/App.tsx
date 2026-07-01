@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { Header, Platform } from './components/Header';
+import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { GmailInput } from './components/GmailInput';
 import { ProxyInput } from './components/ProxyInput';
@@ -21,7 +21,6 @@ import { GmailAccount, SmsProvider, Bio, ProfileImage, CreatedAccount } from './
 function App() {
   const [activeSection, setActiveSection] = useState('gmail');
   const [isRunning, setIsRunning] = useState(false);
-  const [activePlatform, setActivePlatform] = useState<Platform>('bumble');
 
   // 1. Gmail & Password
   const [gmailAccounts, setGmailAccounts] = useState<GmailAccount[]>([]);
@@ -88,8 +87,6 @@ function App() {
       <Header
         accountCount={gmailAccounts.length}
         isRunning={isRunning}
-        activePlatform={activePlatform}
-        onPlatformChange={setActivePlatform}
       />
       <Sidebar activeSection={activeSection} onNavigate={handleNavigate} />
 
